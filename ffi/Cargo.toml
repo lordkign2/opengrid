@@ -1,0 +1,18 @@
+[package]
+name = "opengrid-ffi"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+description.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+opengrid-core = { path = "../core" }
+uniffi.workspace = true
+
+[build-dependencies]
+uniffi = { workspace = true, features = ["build"] }
