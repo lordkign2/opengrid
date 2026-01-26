@@ -6,7 +6,7 @@
 use thiserror::Error;
 
 /// Unified error type for all OpenGrid operations
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone, PartialEq)]
 pub enum OpenGridError {
     /// Node creation or lifecycle error
     #[error("Node error: {0}")]

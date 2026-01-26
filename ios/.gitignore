@@ -1,0 +1,122 @@
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
+
+## User settings
+xcuserdata/
+*.xcuserstate
+*.xcworkspacedata
+
+## Build products
+build/
+Build/
+DerivedData/
+ModuleCache/
+
+## Various settings
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.moved-aside
+*.perspectivev3
+*.xccheckout
+*.moved-aside
+*.xcscmblueprint
+
+## Other
+*.moved-aside
+*.xcplugindata
+*.xcuserdatad
+
+## Obj-C/Swift specific
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
+# Packages/
+# Package.pins
+# Package.resolved
+.build/
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# Pods/
+# Manifest.lock
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo.
+# Instead, use fastlane to re-generate the screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+#
+# After new code Injection tools there's a generated folder /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+
+# OpenGrid specific
+# Build artifacts and temporary files
+*.framework/
+*.app/
+*.zip
+*.tar.gz
+
+# Distribution files
+AppStore/
+TestFlight/
+
+# Simulator data
+Library/Developer/CoreSimulator/
+
+# Security and credentials
+*.p12
+*.mobileprovision
+*.cer
+*.certSigningRequest
+exportOptions.plist
+
+# Logs and temporary files
+*.log
+tmp/
+.DS_Store
+._*
+
+# IDE specific files
+.vscode/
+.idea/
+
+# Local configuration files
+.local
+.config
+.settings/

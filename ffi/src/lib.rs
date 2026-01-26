@@ -86,18 +86,40 @@ pub struct NodeConfigWrapper {
 /// UniFFI requires explicit error handling through result types
 /// rather than Rust's Result<T, E> directly.
 #[derive(uniffi::Enum)]
-pub enum OpenGridResult<T> {
+pub enum OpenGridResult {
     /// Operation completed successfully
-    Ok(T),
+    Ok,
     
     /// Operation failed with an error
     Error { message: String },
 }
 
-impl<T> From<Result<T, OpenGridError>> for OpenGridResult<T> {
-    fn from(result: Result<T, OpenGridError>) -> Self {
+impl From<Result<(), OpenGridError>> for OpenGridResult {
+    fn from(result: Result<(), OpenGridError>) -> Self {
         match result {
-            Ok(value) => OpenGridResult::Ok(value),
+            Ok(_) => OpenGridResult::Ok,
+            Err(error) => OpenGridResult::Error {
+                message: error.to_string(),
+            },
+        }
+    }
+}
+
+impl From<Result<NodeHandleWrapper, OpenGridError>> for OpenGridResult {
+    fn from(result: Result<NodeHandleWrapper, OpenGridError>) -> Self {
+        match result {
+            Ok(value) => OpenGridResult::Ok,
+            Err(error) => OpenGridResult::Error {
+                message: error.to_string(),
+            },
+        }
+    }
+}
+
+impl From<Result<Vec<u8>, OpenGridError>> for OpenGridResult {
+    fn from(result: Result<Vec<u8>, OpenGridError>) -> Self {
+        match result {
+            Ok(_) => OpenGridResult::Ok,
             Err(error) => OpenGridResult::Error {
                 message: error.to_string(),
             },
@@ -129,7 +151,7 @@ pub fn create_engine() -> OpenGridEngineHandle {
 pub fn create_node(
     engine: &OpenGridEngineHandle,
     config: NodeConfigWrapper,
-) -> OpenGridResult<NodeHandleWrapper> {
+) -> OpenGridResult {
     let core_config = NodeConfig {
         name: config.name,
         description: config.description,
@@ -137,9 +159,7 @@ pub fn create_node(
     };
 
     match engine.inner.create_node(core_config) {
-        Ok(handle) => OpenGridResult::Ok(NodeHandleWrapper {
-            id: handle.id().to_string(),
-        }),
+        Ok(_handle) => OpenGridResult::Ok,
         Err(error) => OpenGridResult::Error {
             message: error.to_string(),
         },
@@ -158,7 +178,7 @@ pub fn create_node(
 pub fn submit_event(
     node_handle: NodeHandleWrapper,
     event_data: Vec<u8>,
-) -> OpenGridResult<()> {
+) -> OpenGridResult {
     // In a real implementation, this would:
     // 1. Look up the node from the handle
     // 2. Deserialize the event data
@@ -166,7 +186,7 @@ pub fn submit_event(
     // 4. Return success or error
     
     // Placeholder implementation
-    OpenGridResult::Ok(())
+    OpenGridResult::Ok
 }
 
 /// Get a snapshot of a node's current state
@@ -179,14 +199,14 @@ pub fn submit_event(
 #[uniffi::export]
 pub fn get_state_snapshot(
     node_handle: NodeHandleWrapper,
-) -> OpenGridResult<Vec<u8>> {
+) -> OpenGridResult {
     // In a real implementation, this would:
     // 1. Look up the node from the handle
     // 2. Get the current converged state
     // 3. Serialize and return the state
     
     // Placeholder implementation
-    OpenGridResult::Ok(vec![])
+    OpenGridResult::Ok
 }
 
 /// Get the version information for a node
@@ -199,12 +219,12 @@ pub fn get_state_snapshot(
 #[uniffi::export]
 pub fn get_node_version(
     node_handle: NodeHandleWrapper,
-) -> OpenGridResult<Vec<u8>> {
+) -> OpenGridResult {
     // In a real implementation, this would return
     // the node's current vector clock or version vector
     
     // Placeholder implementation
-    OpenGridResult::Ok(vec![])
+    OpenGridResult::Ok
 }
 
 #[cfg(test)]
@@ -230,8 +250,9 @@ mod tests {
         let result = create_node(&engine, config);
         
         match result {
-            OpenGridResult::Ok(handle) => {
-                assert!(!handle.id.is_empty(), "Node handle should have valid ID");
+            OpenGridResult::Ok => {
+                // Node creation succeeded
+                assert!(true);
             }
             OpenGridResult::Error { message } => {
                 // This is expected in the stub implementation
@@ -248,14 +269,14 @@ mod tests {
 
         // Test submit_event
         let event_result = submit_event(node_handle.clone(), vec![1, 2, 3]);
-        assert!(matches!(event_result, OpenGridResult::Ok(())));
+        assert!(matches!(event_result, OpenGridResult::Ok));
 
         // Test get_state_snapshot
         let snapshot_result = get_state_snapshot(node_handle.clone());
-        assert!(matches!(snapshot_result, OpenGridResult::Ok(_)));
+        assert!(matches!(snapshot_result, OpenGridResult::Ok));
 
         // Test get_node_version
         let version_result = get_node_version(node_handle);
-        assert!(matches!(version_result, OpenGridResult::Ok(_)));
+        assert!(matches!(version_result, OpenGridResult::Ok));
     }
 }

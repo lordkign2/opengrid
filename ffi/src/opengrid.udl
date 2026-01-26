@@ -1,0 +1,25 @@
+namespace opengrid {
+    interface OpenGridEngineHandle {
+    };
+
+    dictionary NodeHandleWrapper {
+        string id;
+    };
+
+    dictionary NodeConfigWrapper {
+        string name;
+        string? description;
+        map<string, string> metadata;
+    };
+
+    enum OpenGridResult {
+        "ok"(T);
+        "error"(string message);
+    };
+
+    OpenGridEngineHandle create_engine();
+    OpenGridResult<NodeHandleWrapper> create_node(OpenGridEngineHandle engine, NodeConfigWrapper config);
+    OpenGridResult<void> submit_event(NodeHandleWrapper node_handle, sequence<u8> event_data);
+    OpenGridResult<sequence<u8>> get_state_snapshot(NodeHandleWrapper node_handle);
+    OpenGridResult<sequence<u8>> get_node_version(NodeHandleWrapper node_handle);
+};
