@@ -1,5 +1,0 @@
-namespace opengrid {
-    dictionary NodeHandleWrapper {
-        string id;
-    };
-}

@@ -1,5 +1,0 @@
-namespace opengrid;
-
-interface OpenGridEngineHandle {
-    constructor();
-};

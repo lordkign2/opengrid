@@ -10,7 +10,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.*
 
-import com.opengrid.android.ffi.*
+import com.opengrid.android.ffi.OpenGridEngine
+import com.opengrid.android.ffi.NodeHandle
 
 /**
  * ViewModel that interfaces with the Rust OpenGrid engine
@@ -24,8 +25,8 @@ class OpenGridViewModel(application: Application) : AndroidViewModel(application
     val engineStatus: LiveData<String> = _engineStatus
     
     // Handles for the Rust engine and nodes
-    private var engineHandle: Any? = null
-    private var nodeHandle: NodeHandleWrapper? = null
+    private var engine: OpenGridEngine? = null
+    private var node: NodeHandle? = null
     
     /**
      * Initialize the Rust engine
@@ -36,43 +37,18 @@ class OpenGridViewModel(application: Application) : AndroidViewModel(application
             
             try {
                 withContext(Dispatchers.IO) {
-                    // Initialize the Rust engine
-                    engineHandle = create_engine()
+                    // Initialize the Rust engine via Diplomat bridge
+                    engine = OpenGridEngine.create()
                     
-                    // Create a dummy node
-                    createDummyNode()
+                    // Create an initial node
+                    engine?.let {
+                        node = it.createNode("Android Node")
+                    }
                 }
                 
                 _engineStatus.value = "Engine initialized successfully"
             } catch (e: Exception) {
                 _engineStatus.value = "Engine init failed: ${e.message}"
-            }
-        }
-    }
-    
-    /**
-     * Create a dummy node for testing purposes
-     */
-    private fun createDummyNode() {
-        if (engineHandle != null) {
-            val config = NodeConfigWrapper(
-                name = "Android Node",
-                description = "Node running on Android device",
-                metadata = mapOf(
-                    "platform" to "android",
-                    "timestamp" to System.currentTimeMillis().toString()
-                )
-            )
-            
-            val result = create_node(engineHandle!!, config)
-            
-            when (result) {
-                is OpenGridResult.Ok -> {
-                    nodeHandle = result.value
-                }
-                is OpenGridResult.Error -> {
-                    _engineStatus.postValue("Failed to create node: ${result.message}")
-                }
             }
         }
     }
@@ -86,60 +62,19 @@ class OpenGridViewModel(application: Application) : AndroidViewModel(application
             
             try {
                 withContext(Dispatchers.IO) {
-                    if (nodeHandle != null) {
+                    node?.let {
                         val eventData = "dummy_event_${Date().time}".toByteArray()
-                        val result = submit_event(nodeHandle!!, eventData)
+                        val version = it.submitEvent(eventData)
                         
-                        when (result) {
-                            is OpenGridResult.Ok -> {
-                                // Event submitted successfully
-                            }
-                            is OpenGridResult.Error -> {
-                                throw Exception(result.message)
-                            }
+                        if (version == 0L) {
+                             throw Exception("Event submission returned version 0")
                         }
-                    } else {
-                        throw Exception("Node not initialized")
-                    }
+                    } ?: throw Exception("Node not initialized")
                 }
                 
-                _engineStatus.value = "Dummy event submitted"
-                
-                // Get a state snapshot
-                getStateSnapshot()
+                _engineStatus.value = "Dummy event submitted. Version: ${node?.currentVersion()}"
             } catch (e: Exception) {
                 _engineStatus.value = "Event submission failed: ${e.message}"
-            }
-        }
-    }
-    
-    /**
-     * Get a state snapshot from the engine
-     */
-    private fun getStateSnapshot() {
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    if (nodeHandle != null) {
-                        val result = get_state_snapshot(nodeHandle!!)
-                        
-                        when (result) {
-                            is OpenGridResult.Ok -> {
-                                // Process the snapshot as needed
-                                // For now, just verify we got a result
-                            }
-                            is OpenGridResult.Error -> {
-                                throw Exception(result.message)
-                            }
-                        }
-                    } else {
-                        throw Exception("Node not initialized")
-                    }
-                }
-                
-                _engineStatus.value = "State snapshot retrieved"
-            } catch (e: Exception) {
-                _engineStatus.value = "Snapshot retrieval failed: ${e.message}"
             }
         }
     }

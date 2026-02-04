@@ -1,9 +1,6 @@
 import Foundation
 import Combine
 
-// Import the UniFFI-generated bindings
-import OpenGridFFI
-
 /**
  * ObservableObject that interfaces with the Rust OpenGrid engine
  *
@@ -15,8 +12,8 @@ class OpenGridObserver: ObservableObject {
     @Published var engineStatus: String = "Not initialized"
     
     // Handles for the Rust engine and nodes
-    private var engineHandle: Any?
-    private var nodeHandle: NodeHandleWrapper?
+    private var engine: OpenGridEngine?
+    private var node: NodeHandle?
     
     init() {
         // Initialize with default state
@@ -29,43 +26,17 @@ class OpenGridObserver: ObservableObject {
         DispatchQueue.global(qos: .background).async {
             self.updateStatus("Initializing engine...")
             
-            // Initialize the Rust engine
-            do {
-                self.engineHandle = create_engine()
-                
-                // Create a dummy node
-                self.createDummyNode()
-                
-                DispatchQueue.main.async {
-                    self.updateStatus("Engine initialized successfully")
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.updateStatus("Engine init failed: \(error.localizedDescription)")
-                }
+            // Initialize the Rust engine via Diplomat bridge
+            self.engine = OpenGridEngine()
+            
+            // Create an initial node
+            if let engine = self.engine {
+                self.node = engine.createNode(name: "iOS Node")
             }
-        }
-    }
-    
-    /**
-     * Create a dummy node for testing purposes
-     */
-    private func createDummyNode() {
-        guard let engineHandle = self.engineHandle else {
-            updateStatus("Cannot create node: engine not initialized")
-            return
-        }
-        
-        let config = NodeConfigWrapper(
-            name: "iOS Node",
-            description: "Node running on iOS device",
-            metadata: ["platform": "ios", "timestamp": String(Date().timeIntervalSince1970)]
-        )
-        
-        do {
-            self.nodeHandle = try create_node(engine: engineHandle, config: config)
-        } catch {
-            updateStatus("Failed to create node: \(error.localizedDescription)")
+            
+            DispatchQueue.main.async {
+                self.updateStatus("Engine initialized successfully")
+            }
         }
     }
     
@@ -77,45 +48,23 @@ class OpenGridObserver: ObservableObject {
             self.updateStatus("Submitting dummy event...")
             
             do {
-                guard let nodeHandle = self.nodeHandle else {
+                guard let node = self.node else {
                     throw NSError(domain: "OpenGrid", code: 1, userInfo: [NSLocalizedDescriptionKey: "Node not initialized"])
                 }
                 
                 let eventData = "dummy_event_\(Date().timeIntervalSince1970)".data(using: .utf8)!
-                try submit_event(node_handle: nodeHandle, event_data: eventData)
+                let version = node.submitEvent(payload: eventData)
+                
+                if version == 0 {
+                    throw NSError(domain: "OpenGrid", code: 2, userInfo: [NSLocalizedDescriptionKey: "Event submission failed"])
+                }
                 
                 DispatchQueue.main.async {
-                    self.updateStatus("Dummy event submitted")
-                    
-                    // Get a state snapshot
-                    self.getStateSnapshot()
+                    self.updateStatus("Dummy event submitted. Version: \(node.currentVersion())")
                 }
             } catch {
                 DispatchQueue.main.async {
                     self.updateStatus("Event submission failed: \(error.localizedDescription)")
-                }
-            }
-        }
-    }
-    
-    /**
-     * Get a state snapshot from the engine
-     */
-    private func getStateSnapshot() {
-        DispatchQueue.global(qos: .background).async {
-            do {
-                guard let nodeHandle = self.nodeHandle else {
-                    throw NSError(domain: "OpenGrid", code: 1, userInfo: [NSLocalizedDescriptionKey: "Node not initialized"])
-                }
-                
-                let _ = try get_state_snapshot(node_handle: nodeHandle)
-                
-                DispatchQueue.main.async {
-                    self.updateStatus("State snapshot retrieved")
-                }
-            } catch {
-                DispatchQueue.main.async {
-                    self.updateStatus("Snapshot retrieval failed: \(error.localizedDescription)")
                 }
             }
         }

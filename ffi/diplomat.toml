@@ -1,2 +1,3 @@
 [kotlin]
 package = "com.opengrid.generated"
+library = "opengrid_ffi"
