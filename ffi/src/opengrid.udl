@@ -1,5 +1,6 @@
 namespace opengrid {
-    interface OpenGridEngineHandle {
+    exception OpenGridError {
+        string message;
     };
 
     dictionary NodeHandleWrapper {
@@ -12,14 +13,14 @@ namespace opengrid {
         map<string, string> metadata;
     };
 
-    enum OpenGridResult {
-        "ok"(T);
-        "error"(string message);
+    interface OpenGridEngineHandle {
+        constructor();
+
+        NodeHandleWrapper create_node(NodeConfigWrapper config) throws OpenGridError;
+        void submit_event(NodeHandleWrapper node_handle, bytes event_data) throws OpenGridError;
+        bytes get_state_snapshot(NodeHandleWrapper node_handle) throws OpenGridError;
+        bytes get_node_version(NodeHandleWrapper node_handle) throws OpenGridError;
     };
 
     OpenGridEngineHandle create_engine();
-    OpenGridResult<NodeHandleWrapper> create_node(OpenGridEngineHandle engine, NodeConfigWrapper config);
-    OpenGridResult<void> submit_event(NodeHandleWrapper node_handle, sequence<u8> event_data);
-    OpenGridResult<sequence<u8>> get_state_snapshot(NodeHandleWrapper node_handle);
-    OpenGridResult<sequence<u8>> get_node_version(NodeHandleWrapper node_handle);
 };

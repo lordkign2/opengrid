@@ -1,0 +1,4 @@
+// Test UDL parsing with minimal content
+interface TestInterface {
+    constructor();
+}
