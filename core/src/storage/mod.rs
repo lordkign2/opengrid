@@ -51,3 +51,26 @@ impl AppendLog for MemoryLog {
         self.entries.len() as u64
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_memory_log_append_and_read() {
+        let mut log = MemoryLog::new();
+        assert_eq!(log.len(), 0);
+        
+        let idx1 = log.append(b"entry 1").unwrap();
+        assert_eq!(idx1, 0);
+        assert_eq!(log.len(), 1);
+        
+        let idx2 = log.append(b"entry 2").unwrap();
+        assert_eq!(idx2, 1);
+        assert_eq!(log.len(), 2);
+        
+        assert_eq!(log.read(0).unwrap(), Some(b"entry 1".to_vec()));
+        assert_eq!(log.read(1).unwrap(), Some(b"entry 2".to_vec()));
+        assert_eq!(log.read(2).unwrap(), None);
+    }
+}

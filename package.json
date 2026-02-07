@@ -1,0 +1,29 @@
+{
+  "name": "opengrid",
+  "version": "1.0.0",
+  "description": "A minimal, offline-first mesh resource exchange protocol engine written in Rust.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:all": "python scripts/verify_all.py",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lordkign2/opengrid.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lordkign2/opengrid/issues"
+  },
+  "homepage": "https://github.com/lordkign2/opengrid#readme",
+  "devDependencies": {
+    "husky": "^9.1.7"
+  }
+}
