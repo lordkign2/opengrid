@@ -5,18 +5,18 @@ import sys
 from pathlib import Path
 
 def run_command(command, cwd=None):
-    print(f"🚀 Running: {' '.join(command)} in {cwd or '.'}")
+    print(f"Running: {' '.join(command)} in {cwd or '.'}")
     try:
         result = subprocess.run(command, cwd=cwd, check=True, capture_output=True, text=True)
-        print("✅ Success!")
+        print("Success!")
         return True
     except subprocess.CalledProcessError as e:
-        print(f"❌ Failed!")
+        print(f"Failed!")
         print(f"STDOUT: {e.stdout}")
         print(f"STDERR: {e.stderr}")
         return False
     except FileNotFoundError:
-        print(f"⚠️ Command not found: {command[0]}. Skipping...")
+        print(f"Command not found: {command[0]}. Skipping...")
         return True # Skip if not installed, or handle strictly depending on policy
 
 def main():
@@ -38,7 +38,7 @@ def main():
         if not run_command([str(android_dir / gradlew), "test"], cwd=str(android_dir)):
             all_passed = False
     else:
-        print(f"ℹ️ Android gradlew not found in {android_dir}. Skipping Android tests.")
+        print(f"Android gradlew not found in {android_dir}. Skipping Android tests.")
 
     # 3. iOS Tests
     print("\n[3/3] Testing iOS...")
@@ -48,14 +48,14 @@ def main():
         if not run_command(["swift", "test"], cwd=str(ios_dir)):
             all_passed = False
     else:
-        print(f"ℹ️ iOS Package.swift not found. Skipping iOS tests.")
+        print(f"iOS Package.swift not found. Skipping iOS tests.")
 
     print("\n" + "="*40)
     if all_passed:
-        print("🎉 ALL TESTS PASSED!")
+        print("ALL TESTS PASSED!")
         return 0
     else:
-        print("🚨 SOME TESTS FAILED!")
+        print("SOME TESTS FAILED!")
         return 1
 
 if __name__ == "__main__":
